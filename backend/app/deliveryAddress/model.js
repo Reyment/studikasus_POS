@@ -48,4 +48,4 @@ const deliveryAddressSchema = Schema({
 }, {timestamps: true})
 
 
-module.exports = model('DeliverAddress', deliveryAddressSchema)
+module.exports = model('DeliveryAddress', deliveryAddressSchema)

@@ -1,28 +1,27 @@
-const User = require('../user/model')
-const bcrypt = require('bcrypt')
-const passport = require('passport')
-const jwt = require('jsonwebtoken')
-const config = require('../config')
-const {getToken} = require('../../utills')
+const User = require('../user/model');
+const bcrypt = require('bcrypt');
+const passport = require('passport');
+const jwt = require('jsonwebtoken');
+const config = require('../config');
+const {getToken} = require('../../utils');
 
 const register = async(req, res, next) => {
-    try {
-        const payload = req.body
-        let user = new User(payload)
-        await user.save()
-        return res.json(user)
+  try{
+    const payload = req.body; 
+    let user = new User(payload);
+    await user.save(); 
+    return res.json(user);
 
-    } catch (err) {
-        if(err && err.name === 'ValidatorError') {
-            return res.json({
-                error: 1,
-                message: err.message,
-                fields: err.errors
-            })
-        }
-        
-        next(err)
+  } catch(err) {
+    if(err && err.name === 'ValidationError'){
+      return res.json({
+        error: 1, 
+        message: err.message, 
+        fields: err.errors 
+      });
     }
+    next(err);
+  }
 }
 
 
@@ -52,7 +51,7 @@ const login = (req, res, next) => {
             message: 'Email or Password incorrect'
         })
 
-        let signed = jwt.sign(user, config.secretKey)
+        let signed = jwt.sign(user, config.secretkey)
 
         await User.findByIdAndUpdate(user._id, {$push: {token: signed}})
 
@@ -66,41 +65,41 @@ const login = (req, res, next) => {
 
 }
 
-const logout = (req, res, next) =>  {
-    let token = getToken(req)
-    let user = User.findOne({token: {$In: [token]}}, {$pull: {token: token}}, {useFindAndModify: false} )
 
+
+const logout = async (req, res, next) => {
+    let token = getToken(req);
+  
+    let user = await User.findOneAndUpdate({token: {$in: [token]}}, {$pull: {token: token}}, {useFindAndModify: false})
+  
     if(!token || !user) {
-        res.json({
-            error: 1,
-            message: 'No User Found!!'
-        })
+      res.json({
+        error: 1,
+        message: 'No User Found!!!'
+      });
     }
+  
     return res.json({
-        error: 0,
-        message: 'Logout Berhasil'
-    })
-}
-
-const me = (req, res, next) => {
+      error: 0, 
+      message: 'Logout berhasil'
+    });
+  }
+  
+  const me = (req, res, next) => {
     if(!req.user) {
-        res.json({
-            err: 1,
-            message: `You're not login or token expired`
-
-        })
+      res.json({
+        err: 1,
+        message: `You're not login or token expired`
+      });
     }
-    res.json(req.user)
-
-}
-
-
+  
+    res.json(req.user);
+  }
 
 module.exports = {
-    register,
-    localStrategy,
-    login,
-    logout,
-    me
-
+  register,
+  localStrategy,
+  login,
+  logout,
+  me
 }

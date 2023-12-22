@@ -1,11 +1,21 @@
-const router = require('express').Router()
+const { police_check } = require('../../middlewares');
+const deliveryAddressController = require('./controller');
 
-const categoryController = require('./controller')
+const router = require('express').Router();
 
-router.get('/categories', categoryController.index)
-router.post('/categories', categoryController.store)
-router.put('/categories/:id', categoryController.update)
-router.delete('/categories/:id', categoryController.destroy)
+router.post(
+  '/delivery-addresses',
+  police_check('create', 'DeliveryAddress'),
+  deliveryAddressController.store
+);
 
+router.put('/delivery-addresses/:id', deliveryAddressController.update);
+router.delete('/delivery-addresses/:id', deliveryAddressController.destroy);
 
-module.exports = router
+router.get(
+  '/delivery-addresses',
+  police_check('view', 'DeliveryAddress'),
+  deliveryAddressController.index
+)
+
+module.exports = router;
